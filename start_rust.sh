@@ -17,7 +17,7 @@ exit_handler()
 	wait "$killer"
 
 	# Stop the web server
-	pkill -f nginx
+	#pkill -f nginx
 
 	echo "Exiting.."
 	exit
@@ -138,12 +138,12 @@ if [ ! -z ${RUST_RCON_WEB+x} ]; then
 	RUST_STARTUP_COMMAND="$RUST_STARTUP_COMMAND +rcon.web $RUST_RCON_WEB"
 	if [ "$RUST_RCON_WEB" = "1" ]; then
 		# Fix the webrcon (customizes a few elements)
-		bash /tmp/fix_conn.sh
+		#bash /tmp/fix_conn.sh
 
 		# Start nginx (in the background)
-		echo "Starting web server.."
-		nginx
-		NGINX=$!
+		#echo "Starting web server.."
+		#nginx
+		#NGINX=$!
 		sleep 5
 	fi
 fi
@@ -194,23 +194,43 @@ fi
 # Set the working directory
 cd /steamcmd/rust
 
+# Magic
+SERVER_MAP_ARGUMENTS="+server.seed \"${RUST_SERVER_SEED}\" +server.worldsize \"${RUST_SERVER_WORLDSIZE}\""
+
+if [ ! -z "${RUST_SERVER_LEVEL}" ]; then
+	SERVER_MAP_ARGUMENTS="+server.level \"${RUST_SERVER_LEVEL}\""
+fi
+
+if [ ! -z "${RUST_SERVER_LEVEL_URL}" ]; then
+	SERVER_MAP_ARGUMENTS="+server.levelurl \"${RUST_SERVER_LEVEL_URL}\""
+fi
+
 # Run the server
 echo "Starting Rust.."
 if [ "$RUST_SERVER_PORT" != "" ]; then
 	RUST_SERVER_PORT="+server.port $RUST_SERVER_PORT"
 fi
+
 if [ "$LOGROTATE_ENABLED" = "1" ]; then
-	unbuffer /steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" +server.seed "$RUST_SERVER_SEED" +server.hostname "$RUST_SERVER_NAME" +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" +server.worldsize "$RUST_SERVER_WORLDSIZE" +server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee $RUST_SERVER_LOG_FILE &
+	unbuffer /steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" +server.hostname "${RUST_SERVER_NAME}" \
+	${SERVER_MAP_ARGUMENTS} +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" \
+	+server.worldsize "$RUST_SERVER_WORLDSIZE" +server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee $RUST_SERVER_LOG_FILE &
+
 elif [ "$STDLOG_ENABLED" = "1" ]; then
-	/steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" +server.seed "$RUST_SERVER_SEED" +server.hostname "$RUST_SERVER_NAME" +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" +server.worldsize "$RUST_SERVER_WORLDSIZE" +server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" 2>&1 &
+	/steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" \
+	${SERVER_MAP_ARGUMENTS} +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" +server.hostname "${RUST_SERVER_NAME}" \
+	+server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" 2>&1 &
+
 else
-	/steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" +server.seed "$RUST_SERVER_SEED" +server.hostname "$RUST_SERVER_NAME" +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" +server.worldsize "$RUST_SERVER_WORLDSIZE" +server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" &
+	/steamcmd/rust/RustDedicated $RUST_STARTUP_COMMAND "$RUST_SERVER_PORT" +server.identity "$RUST_SERVER_IDENTITY" \
+	${SERVER_MAP_ARGUMENTS} +server.url "$RUST_SERVER_URL" +server.headerimage "$RUST_SERVER_BANNER_URL" +server.description "$RUST_SERVER_DESCRIPTION" +server.hostname "${RUST_SERVER_NAME}" \
+	+server.maxplayers "$RUST_SERVER_MAXPLAYERS" +server.saveinterval "$RUST_SERVER_SAVE_INTERVAL" +app.port "$RUST_APP_PORT" &
 fi
 
 child=$!
 wait "$child"
 
-pkill -f nginx
+#pkill -f nginx
 
 echo "Exiting.."
 exit

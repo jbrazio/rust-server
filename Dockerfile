@@ -107,6 +107,9 @@ ENV RUST_SERVER_WORLDSIZE "3500"
 ENV RUST_SERVER_MAXPLAYERS "500"
 ENV RUST_SERVER_SAVE_INTERVAL "600"
 
+ENV RUST_SERVER_LEVEL ""
+ENV RUST_SERVER_LEVEL_URL ""
+
 # Define directories to take ownership of
 ENV CHOWN_DIRS "/app,/steamcmd,/usr/share/nginx/html,/var/log/nginx"
 
