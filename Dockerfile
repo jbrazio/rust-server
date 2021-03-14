@@ -8,26 +8,11 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        nginx \
         expect \
         tcl \
 	libsdl2-2.0-0:i386 \
         libgdiplus && \
     rm -rf /var/lib/apt/lists/*
-
-# Remove default nginx stuff
-RUN rm -fr /usr/share/nginx/html/* && \
-	rm -fr /etc/nginx/sites-available/* && \
-	rm -fr /etc/nginx/sites-enabled/*
-
-# Install webrcon (specific commit)
-COPY nginx_rcon.conf /etc/nginx/nginx.conf
-RUN curl -sL https://github.com/Facepunch/webrcon/archive/24b0898d86706723d52bb4db8559d90f7c9e069b.zip | bsdtar -xvf- -C /tmp && \
-	mv /tmp/webrcon-24b0898d86706723d52bb4db8559d90f7c9e069b/* /usr/share/nginx/html/ && \
-	rm -fr /tmp/webrcon-24b0898d86706723d52bb4db8559d90f7c9e069b
-
-# Customize the webrcon package to fit our needs
-ADD fix_conn.sh /tmp/fix_conn.sh
 
 # Create the volume directories
 RUN mkdir -p /steamcmd/rust /usr/share/nginx/html /var/log/nginx
@@ -71,16 +56,13 @@ WORKDIR /
 # Fix permissions
 RUN chown -R 1000:1000 \
     /steamcmd \
-    /app \
-    /usr/share/nginx/html \
-    /var/log/nginx
+    /app
 
 # Run as a non-root user by default
 ENV PGID 1000
 ENV PUID 1000
 
 # Expose necessary ports
-EXPOSE 8080
 EXPOSE 28015
 EXPOSE 28016
 EXPOSE 28082
@@ -111,7 +93,7 @@ ENV RUST_SERVER_LEVEL ""
 ENV RUST_SERVER_LEVEL_URL ""
 
 # Define directories to take ownership of
-ENV CHOWN_DIRS "/app,/steamcmd,/usr/share/nginx/html,/var/log/nginx"
+ENV CHOWN_DIRS "/app,/steamcmd"
 
 # Expose the volumes
 # VOLUME [ "/steamcmd/rust" ]

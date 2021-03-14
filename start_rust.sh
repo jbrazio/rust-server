@@ -16,9 +16,6 @@ exit_handler()
 	killer=$!
 	wait "$killer"
 
-	# Stop the web server
-	#pkill -f nginx
-
 	echo "Exiting.."
 	exit
 }
@@ -136,16 +133,6 @@ fi
 
 if [ ! -z ${RUST_RCON_WEB+x} ]; then
 	RUST_STARTUP_COMMAND="$RUST_STARTUP_COMMAND +rcon.web $RUST_RCON_WEB"
-	if [ "$RUST_RCON_WEB" = "1" ]; then
-		# Fix the webrcon (customizes a few elements)
-		#bash /tmp/fix_conn.sh
-
-		# Start nginx (in the background)
-		#echo "Starting web server.."
-		#nginx
-		#NGINX=$!
-		sleep 5
-	fi
 fi
 
 # Disable logrotate if "-logfile" is set in $RUST_STARTUP_COMMAND
@@ -229,8 +216,6 @@ fi
 
 child=$!
 wait "$child"
-
-#pkill -f nginx
 
 echo "Exiting.."
 exit
